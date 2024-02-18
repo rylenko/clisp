@@ -1,0 +1,158 @@
+(def {nil} {})
+(def {true} 1)
+(def {false} 0)
+
+; Basic
+(def {fun} (\ {name_and_args body} {
+	def (head name_and_args) (\ (tail name_and_args) body)
+}))
+
+; Pack and unpack
+(fun {pack f & xs} {f xs})
+(fun {unpack f l} {
+	eval (join (list f) l)
+})
+
+; Examples:
+; ```
+; let {do (= {x} 100) (x)}
+; > 100
+; x
+; > Error: ...
+; ```
+(fun {do & l} {
+	if (== l nil) {nil} {last l}
+})
+(fun {let b} {
+	(\ {_} b) ()
+})
+
+; Examples:
+; ```
+; def {define-one} (flip def 1)
+; define-one {y}
+; y
+; > 1
+; ```
+(fun {flip f a b} {f b a})
+
+(fun {ghost & xs} {eval xs})
+
+(fun {comp f g x} {f (g x)})
+
+; Lists
+(fun {first l} {eval (head l)})
+(fun {second l} {eval (head (tail l))})
+(fun {third l} {eval (head (tail (tail l)))})
+(fun {nth l n} {
+	if (== n 0)
+		{first l}
+		{nth (tail l) (- n 1)}
+})
+(fun {last l} {nth l (- (len l) 1)})
+(fun {len l} {
+	if (== l nil)
+		{0}
+		{+ 1 (len (tail l)) }
+})
+(fun {take l n} {
+	if (== n 0)
+		{nil}
+		{join (head l) (take (tail l) (- n 1))}
+})
+(fun {drop l n} {
+	if (== n 0)
+		{l}
+		{drop (tail l) (- n 1)}
+})
+(fun {split l n} {
+	list (take l n) (drop l n)
+})
+(fun {in l x} {
+	if (== l nil)
+		{false}
+		{
+			if (== x (first l))
+				{true}
+				{in (tail l) x}
+		}
+})
+(fun {map l f} {
+	if (== l nil)
+		{nil}
+		{join (list (f (first l))) (map (tail l) f)}
+})
+(fun {filter l f} {
+	if (== l nil)
+		{nil}
+		{
+			join
+			(
+				if (f (first l))
+					{head l}
+					{nil}
+			)
+			(filter (tail l) f)
+		}
+})
+(fun {foldl l f z} {
+	if (== l nil)
+		{z}
+		{foldl (tail l) f (f z (first l))}
+})
+(fun {sum l} {
+	foldl l + 0
+})
+(fun {product l} {
+	foldl l * 1
+})
+
+(fun {select & cs} {
+	if (== cs nil)
+		{error "No selection found."}
+		{
+			if (first (first cs))
+				{second (first cs)}
+				{unpack select (tail cs)}
+		}
+})
+
+; Case
+(def {otherwise} true)
+(fun {case x & cs} {
+	if (== cs nil)
+		{error "No case found."}
+		{
+			if (== x (first (first cs)))
+				{second (first cs)}
+				; {case x (tail cs)?
+				{unpack case (join (list x) (tail cs))}
+		}
+})
+
+; Days
+(fun {month_day_suffix i} {
+	select
+		{(== i 1) "st"}
+		{(== i 2) "nd"}
+		{(== i 3) "rd"}
+		{otherwise "th"}
+})
+(fun {day_name x} {
+	case x
+		{0 "Monday"}
+		{1 "Tuesday"}
+		{2 "Wednesday"}
+		{3 "Thursday"}
+		{4 "Friday"}
+		{5 "Saturday"}
+		{6 "Sunday"}
+})
+
+; Fibonacci
+(fun {fib n} {
+	select
+		{(== n 0) 0}
+		{(== n 1) 1}
+		{otherwise (+ (fib (- n 1)) (fib (- n 2)))}
+})
