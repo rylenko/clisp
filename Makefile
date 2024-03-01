@@ -27,7 +27,7 @@ src/value.o: src/config.h src/grammar.h src/env.h src/mpc.h src/utils.h src/valu
 clean:
 	rm -f clisp $(OBJ)
 
-install: clisp
+install: all
 	mkdir -p $(PREFIX)/bin
 	cp -f $< $(PREFIX)/bin/$<
 	chmod 755 $(PREFIX)/bin/$<
