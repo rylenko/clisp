@@ -35,4 +35,4 @@ install: clisp
 uninstall:
 	rm -f $(PREFIX)/bin/clisp
 
-.PHONY: clisp clean install uninstall
+.PHONY: all clean install uninstall
